@@ -7,6 +7,34 @@ const https = require("https");
 const path = require("path");
 const OpenAI = require("openai");
 
+/** Required API keys for connection tests. Each entry is key or [alt1, alt2]. */
+const REQUIRED_KEYS = [
+  "OPENAI_API_KEY",
+  ["CLOUDINARY_CLOUDNAME", "CLOUDINARY_CLOUD_NAME"],
+  ["CLOUDINARY_APIKEY", "CLOUDINARY_API_KEY"],
+  ["CLOUDINARY_APISECRET", "CLOUDINARY_API_SECRET"],
+];
+
+function checkRequiredEnv() {
+  const missing = [];
+  for (const keyOrAlts of REQUIRED_KEYS) {
+    const keys = Array.isArray(keyOrAlts) ? keyOrAlts : [keyOrAlts];
+    const value = keys.reduce((v, k) => v || process.env[k], undefined);
+    if (value === undefined || value === null || String(value).trim() === "") {
+      missing.push(keys.length > 1 ? keys.join(" or ") : keys[0]);
+    }
+  }
+  if (missing.length === 0) return;
+  console.error(
+    "[test] ERROR: Missing required .env API keys for connection tests:",
+  );
+  missing.forEach((k) => console.error("[test]   -", k));
+  console.error("[test] Copy .env-example to .env and set the values.");
+  process.exit(1);
+}
+
+checkRequiredEnv();
+
 const log = (msg, level = "info") => {
   const prefix = level === "error" ? "[test] ERROR:" : "[test]";
   const out = level === "error" ? console.error : console.log;

@@ -9,9 +9,6 @@ node_modules/
 # Downloaded assets and output
 downloads/
 
-# Generated output (default TAGGER_OUTPUT)
-alt-tags.json
-
 # OS
 .DS_Store
 Thumbs.db

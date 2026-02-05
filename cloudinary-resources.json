@@ -1,1 +1,20 @@
-{}
+{
+  "": {
+    "resources": [
+      {
+        "public_id": "sample",
+        "secure_url": "https://res.cloudinary.com/demo/image/upload/sample",
+        "resource_type": "image"
+      }
+    ]
+  },
+  "docs": {
+    "resources": [
+      {
+        "public_id": "docs/sample",
+        "secure_url": "https://res.cloudinary.com/demo/image/upload/docs/sample",
+        "resource_type": "image"
+      }
+    ]
+  }
+}

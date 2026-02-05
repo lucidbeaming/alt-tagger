@@ -16,22 +16,16 @@ const {
 const { buildUrlEntries } = require("./lib/buildUrls");
 const { downloadAll } = require("./lib/download");
 const { generateAltsForAll } = require("./lib/vision");
-const {
-  DEMO_CLOUD_NAME,
-  DEMO_RESOURCE_TREE,
-} = require("./lib/testFixture");
+const { DEMO_CLOUD_NAME, DEMO_RESOURCE_TREE } = require("./lib/testFixture");
 
 const TASKS = ["list", "download", "generate", "push", "test"];
-const PREFIX = "[tagger]";
 const PREFIX_PUSH = "[tagger] push:";
 
 function isPlaceholderOrError(altText) {
   if (typeof altText !== "string") return true;
   const t = altText.trim();
   return (
-    t.startsWith("[error:") ||
-    t.startsWith("[download failed") ||
-    t === ""
+    t.startsWith("[error:") || t.startsWith("[download failed") || t === ""
   );
 }
 
@@ -61,13 +55,21 @@ Examples:
 
 async function runList(argv) {
   const config = getConfig(argv);
-  const cloudName = config.cloudName || process.env.CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_CLOUDNAME;
+  const cloudName =
+    config.cloudName ||
+    process.env.CLOUDINARY_CLOUD_NAME ||
+    process.env.CLOUDINARY_CLOUDNAME;
   if (!cloudName) {
-    console.error("[tagger] list: CLOUDINARY_CLOUD_NAME (or CLOUDINARY_CLOUDNAME) is required");
+    console.error(
+      "[tagger] list: CLOUDINARY_CLOUD_NAME (or CLOUDINARY_CLOUDNAME) is required",
+    );
     process.exit(1);
   }
   if (config.verbose) {
-    console.error("[tagger] list: Retrieving resource list for cloud", cloudName);
+    console.error(
+      "[tagger] list: Retrieving resource list for cloud",
+      cloudName,
+    );
   }
   const tree = await retrieveResourceList({
     cloudName,
@@ -90,7 +92,8 @@ function countResources(node) {
   for (const key of Object.keys(node)) {
     if (key === "resources") continue;
     const val = node[key];
-    if (val && typeof val === "object" && !Array.isArray(val)) n += countResources(val);
+    if (val && typeof val === "object" && !Array.isArray(val))
+      n += countResources(val);
   }
   return n;
 }
@@ -107,34 +110,57 @@ async function runDownload(argv) {
   }
   if (!fs.existsSync(config.inputPath)) {
     console.error("[tagger] download: Input file not found:", config.inputPath);
-    console.error("[tagger] download: Run 'list' first or provide an existing resource list file.");
+    console.error(
+      "[tagger] download: Run 'list' first or provide an existing resource list file.",
+    );
     process.exit(1);
   }
   let resources = parseResources(config.inputPath, { verbose: config.verbose });
   if (config.limit) {
     const before = resources.length;
     resources = resources.slice(0, config.limit);
-    if (config.verbose) console.error("[tagger] download: Limited to", config.limit, "(from", before, ")");
+    if (config.verbose)
+      console.error(
+        "[tagger] download: Limited to",
+        config.limit,
+        "(from",
+        before,
+        ")",
+      );
   }
   const cloudName =
-    config.cloudName || (resources[0] && parseCloudNameFromUrl(resources[0].secure_url));
+    config.cloudName ||
+    (resources[0] && parseCloudNameFromUrl(resources[0].secure_url));
   if (!cloudName) {
-    console.error("[tagger] download: Could not determine cloud name. Set CLOUDINARY_CLOUD_NAME or use input with secure_url.");
+    console.error(
+      "[tagger] download: Could not determine cloud name. Set CLOUDINARY_CLOUD_NAME or use input with secure_url.",
+    );
     process.exit(1);
   }
-  const { entries } = buildUrlEntries(resources, cloudName, config.downloadDir, {
-    verbose: config.verbose,
-  });
+  const { entries } = buildUrlEntries(
+    resources,
+    cloudName,
+    config.downloadDir,
+    {
+      verbose: config.verbose,
+    },
+  );
   if (!fs.existsSync(config.downloadDir)) {
     fs.mkdirSync(config.downloadDir, { recursive: true });
   }
-  console.error("[tagger] download: Downloading", entries.length, "images to", config.downloadDir);
+  console.error(
+    "[tagger] download: Downloading",
+    entries.length,
+    "images to",
+    config.downloadDir,
+  );
   const { succeeded, failed } = await downloadAll(entries, config.downloadDir, {
     verbose: config.verbose,
   });
   if (failed.length) {
     console.error("[tagger] download: Failed", failed.length);
-    if (config.verbose) failed.forEach((f) => console.error("  ", f.public_id, f.error.message));
+    if (config.verbose)
+      failed.forEach((f) => console.error("  ", f.public_id, f.error.message));
   }
   console.error("[tagger] download: Done. Downloaded", succeeded.length);
 }
@@ -157,28 +183,44 @@ async function runGenerate(argv) {
   }
   if (!fs.existsSync(config.inputPath)) {
     console.error("[tagger] generate: Input file not found:", config.inputPath);
-    console.error("[tagger] generate: Run 'list' first (or provide a resource list).");
+    console.error(
+      "[tagger] generate: Run 'list' first (or provide a resource list).",
+    );
     process.exit(1);
   }
   let resources = parseResources(config.inputPath, { verbose: config.verbose });
   if (config.limit) {
     const before = resources.length;
     resources = resources.slice(0, config.limit);
-    if (config.verbose) console.error("[tagger] generate: Limited to", config.limit, "(from", before, ")");
+    if (config.verbose)
+      console.error(
+        "[tagger] generate: Limited to",
+        config.limit,
+        "(from",
+        before,
+        ")",
+      );
   }
   const cloudName =
-    config.cloudName || (resources[0] && parseCloudNameFromUrl(resources[0].secure_url));
+    config.cloudName ||
+    (resources[0] && parseCloudNameFromUrl(resources[0].secure_url));
   if (!cloudName) {
-    console.error("[tagger] generate: Could not determine cloud name. Set CLOUDINARY_CLOUD_NAME or use input with secure_url.");
+    console.error(
+      "[tagger] generate: Could not determine cloud name. Set CLOUDINARY_CLOUD_NAME or use input with secure_url.",
+    );
     process.exit(1);
   }
   const { entries, pathByPublicId } = buildUrlEntries(
     resources,
     cloudName,
     config.downloadDir,
-    { verbose: config.verbose }
+    { verbose: config.verbose },
   );
-  console.error("[tagger] generate: Generating alt text for", entries.length, "images (rate-limited)...");
+  console.error(
+    "[tagger] generate: Generating alt text for",
+    entries.length,
+    "images (rate-limited)...",
+  );
   const alts = await generateAltsForAll(
     entries.map((e) => e.public_id),
     pathByPublicId,
@@ -187,14 +229,20 @@ async function runGenerate(argv) {
       model: config.openaiModel,
       delayMs: config.delayMs,
       verbose: config.verbose,
-    }
+    },
   );
   const outputDir = path.dirname(config.outputPath);
   if (outputDir && outputDir !== "." && !fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
   fs.writeFileSync(config.outputPath, JSON.stringify(alts, null, 2), "utf8");
-  console.error("[tagger] generate: Wrote", config.outputPath, "(", Object.keys(alts).length, "entries )");
+  console.error(
+    "[tagger] generate: Wrote",
+    config.outputPath,
+    "(",
+    Object.keys(alts).length,
+    "entries )",
+  );
 }
 
 async function pushAltsToCloudinary(alts, pushConfig) {
@@ -206,7 +254,7 @@ async function pushAltsToCloudinary(alts, pushConfig) {
 
   if (!cloudName || !apiKey || !apiSecret) {
     console.error(
-      `${PREFIX_PUSH} Missing Cloudinary credentials. Set CLOUDINARY_CLOUD_NAME (or CLOUDINARY_CLOUDNAME), CLOUDINARY_API_KEY (or CLOUDINARY_APIKEY), and CLOUDINARY_API_SECRET (or CLOUDINARY_APISECRET).`
+      `${PREFIX_PUSH} Missing Cloudinary credentials. Set CLOUDINARY_CLOUD_NAME (or CLOUDINARY_CLOUDNAME), CLOUDINARY_API_KEY (or CLOUDINARY_APIKEY), and CLOUDINARY_API_SECRET (or CLOUDINARY_APISECRET).`,
     );
     process.exit(1);
   }
@@ -319,11 +367,18 @@ async function runPush(argv) {
   try {
     alts = JSON.parse(fs.readFileSync(pushConfig.inputPath, "utf8"));
   } catch (err) {
-    console.error("[tagger] push: Invalid JSON in", pushConfig.inputPath, err.message);
+    console.error(
+      "[tagger] push: Invalid JSON in",
+      pushConfig.inputPath,
+      err.message,
+    );
     process.exit(1);
   }
   if (typeof alts !== "object" || alts === null) {
-    console.error("[tagger] push: Expected an object (public_id -> alt text) in", pushConfig.inputPath);
+    console.error(
+      "[tagger] push: Expected an object (public_id -> alt text) in",
+      pushConfig.inputPath,
+    );
     process.exit(1);
   }
   await pushAltsToCloudinary(alts, pushConfig);
@@ -388,7 +443,9 @@ async function runTest(argv) {
   const verbose = config.verbose;
 
   if (verbose) {
-    console.error("[tagger] test: Using demo cloud, simulated generation and push");
+    console.error(
+      "[tagger] test: Using demo cloud, simulated generation and push",
+    );
   }
 
   // 1. List (simulated): write fixture to resource list file
@@ -402,11 +459,17 @@ async function runTest(argv) {
     "utf8",
   );
   const listCount = countResources(DEMO_RESOURCE_TREE);
-  console.error("[tagger] test: Wrote resource list (fixture) to", config.inputPath, "(", listCount, "resources )");
+  console.error(
+    "[tagger] test: Wrote resource list (fixture) to",
+    config.inputPath,
+    "(",
+    listCount,
+    "resources )",
+  );
 
   // 2. Download: real downloads from demo cloud public URLs (no API key)
   let resources = parseResources(config.inputPath, { verbose });
-  const { entries, pathByPublicId } = buildUrlEntries(
+  const { entries } = buildUrlEntries(
     resources,
     cloudName,
     config.downloadDir,
@@ -415,13 +478,18 @@ async function runTest(argv) {
   if (!fs.existsSync(config.downloadDir)) {
     fs.mkdirSync(config.downloadDir, { recursive: true });
   }
-  console.error("[tagger] test: Downloading", entries.length, "images from demo cloud...");
+  console.error(
+    "[tagger] test: Downloading",
+    entries.length,
+    "images from demo cloud...",
+  );
   const { succeeded, failed } = await downloadAll(entries, config.downloadDir, {
     verbose,
   });
   if (failed.length) {
     console.error("[tagger] test: Download failed for", failed.length);
-    if (verbose) failed.forEach((f) => console.error("  ", f.public_id, f.error.message));
+    if (verbose)
+      failed.forEach((f) => console.error("  ", f.public_id, f.error.message));
   }
   console.error("[tagger] test: Downloaded", succeeded.length);
 
@@ -434,7 +502,13 @@ async function runTest(argv) {
     fs.mkdirSync(outDir, { recursive: true });
   }
   fs.writeFileSync(config.outputPath, JSON.stringify(alts, null, 2), "utf8");
-  console.error("[tagger] test: Wrote", config.outputPath, "(", Object.keys(alts).length, "entries )");
+  console.error(
+    "[tagger] test: Wrote",
+    config.outputPath,
+    "(",
+    Object.keys(alts).length,
+    "entries )",
+  );
 
   // 4. Push (simulated): no Cloudinary API
   console.error("[tagger] test: Simulating push to Cloudinary (no API)...");

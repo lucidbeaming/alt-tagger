@@ -3,8 +3,12 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "list": "node index.js list",
+    "download": "node index.js download",
+    "generate": "node index.js generate",
+    "push": "node index.js push",
     "push-alt": "node index.js push",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node index.js test",
     "test:connections": "node scripts/test-connections.js",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

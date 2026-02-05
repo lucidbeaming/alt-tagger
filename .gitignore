@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Environment and secrets (use .env-example as template)
+.env
+.env.local
+.env.*.local
+
+# Downloaded assets and output
+downloads/
+
+# Generated output (default TAGGER_OUTPUT)
+alt-tags.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs and debug
+*.log
+npm-debug.log*
+.npm
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Optional: uncomment if you don't want to track input data
+# cloudinary-resources.json

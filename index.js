@@ -42,6 +42,8 @@ Tasks:
   download  Download images from resource list to downloads directory
   generate  Generate alt text for downloaded images via OpenAI Vision, write to output file (e.g. alt-tags.json)
   push      Update Cloudinary resources with alt text from output file
+              --mode missing  Only update resources without an existing alt field (default)
+              --mode all      Replace alt text on all resources
   test      Run full pipeline with Cloudinary demo cloud: fixture list, real download, simulated alt generation and push (no OpenAI or Cloudinary API)
 
 Each task runs independently. Options (e.g. --input, --output, --limit, --verbose) apply per task.
@@ -268,9 +270,50 @@ async function pushAltsToCloudinary(alts, pushConfig) {
   const entries = Object.entries(alts);
   const list = pushConfig.limit ? entries.slice(0, pushConfig.limit) : entries;
 
+  // When mode is "missing", fetch existing alt metadata so we can skip resources that already have it
+  const existingAlts = new Set();
+  if (pushConfig.mode === "missing") {
+    const publicIds = list
+      .filter(([, altText]) => !isPlaceholderOrError(altText))
+      .map(([id]) => id);
+    if (publicIds.length > 0) {
+      if (pushConfig.verbose) {
+        console.error(
+          `${PREFIX_PUSH} Checking existing alt text for ${publicIds.length} resources...`,
+        );
+      }
+      const BATCH_SIZE = 100;
+      for (let b = 0; b < publicIds.length; b += BATCH_SIZE) {
+        const batch = publicIds.slice(b, b + BATCH_SIZE);
+        try {
+          const res = await cloudinary.api.resources_by_ids(batch, {
+            resource_type: "image",
+            type: "upload",
+            context: true,
+          });
+          for (const r of res.resources || []) {
+            const alt =
+              r.context && r.context.custom && r.context.custom.alt;
+            if (alt) existingAlts.add(r.public_id);
+          }
+        } catch (err) {
+          console.error(
+            `${PREFIX_PUSH} Warning: failed to fetch existing context for batch:`,
+            err.message,
+          );
+        }
+      }
+      if (pushConfig.verbose) {
+        console.error(
+          `${PREFIX_PUSH} Found ${existingAlts.size} resources with existing alt text`,
+        );
+      }
+    }
+  }
+
   if (pushConfig.verbose) {
     console.error(
-      `${PREFIX_PUSH} Pushing ${list.length} resources to Cloudinary...`,
+      `${PREFIX_PUSH} Pushing resources to Cloudinary (mode: ${pushConfig.mode})...`,
     );
   }
 
@@ -285,6 +328,14 @@ async function pushAltsToCloudinary(alts, pushConfig) {
       skipped.push(publicId);
       if (pushConfig.verbose) {
         console.error(`${PREFIX_PUSH} Skip (placeholder/error):`, publicId);
+      }
+      continue;
+    }
+
+    if (pushConfig.mode === "missing" && existingAlts.has(publicId)) {
+      skipped.push(publicId);
+      if (pushConfig.verbose) {
+        console.error(`${PREFIX_PUSH} Skip (already has alt):`, publicId);
       }
       continue;
     }

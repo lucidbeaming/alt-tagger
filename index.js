@@ -292,8 +292,7 @@ async function pushAltsToCloudinary(alts, pushConfig) {
             context: true,
           });
           for (const r of res.resources || []) {
-            const alt =
-              r.context && r.context.custom && r.context.custom.alt;
+            const alt = r.context && r.context.custom && r.context.custom.alt;
             if (alt) existingAlts.add(r.public_id);
           }
         } catch (err) {

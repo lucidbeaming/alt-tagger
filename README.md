@@ -14,7 +14,7 @@ Each step is a separate task so you can run only what you need, re-run steps, or
 
 ## Requirements
 
-- **Node.js** 18+ (for native `fetch` if used; otherwise 16+)
+- **Node.js** 22+ (required by the openai SDK)
 - **OpenAI API key** (for the `generate` task)
 - **Cloudinary account** (for `list` and `push`; cloud name can be inferred from resource list URLs for `download`/`generate`)
 

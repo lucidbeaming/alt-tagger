@@ -142,7 +142,7 @@ async function testCloudinaryYourCloud() {
     ? path.resolve(process.cwd(), process.env.TAGGER_INPUT)
     : path.resolve(process.cwd(), "cloudinary-resources.json");
 
-  let publicId = null;
+  let publicId;
   if (cloudName) {
     log(`Checking your Cloudinary cloud "${cloudName}" (sample URL fetch)...`);
     publicId = "sample";

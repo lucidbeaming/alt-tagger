@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-23
+
+Current dependencies (openai 7, cloudinary 2.11, ESLint 10; npm audit: 0), with Node 22+ now required. Test runs no longer dirty the working tree, and the README adds guidance on writing good alt text.
+
 ### Added
 
 - README: sample output, alt-text quality guidance, `push --mode` / `PUSHALT_MODE`, related projects (#9)
@@ -24,3 +28,6 @@ All notable changes to this project are documented here. The format follows [Kee
 ### Security
 
 - Resolved 5 high and 2 moderate npm advisories (#2)
+
+[Unreleased]: https://github.com/lucidbeaming/alt-tagger/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/lucidbeaming/alt-tagger/releases/tag/v1.1.0

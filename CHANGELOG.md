@@ -14,6 +14,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Fixed
 
+- `npm run test` no longer dirties the working tree: pipeline output (`alt-tags.json`, `cloudinary-resources.json`, `downloads/`) is ignored and untracked (#7)
 - `@eslint/js` declared as a dev dependency; `npm run lint` failed without it on ESLint 10 (#2)
 
 ### Security

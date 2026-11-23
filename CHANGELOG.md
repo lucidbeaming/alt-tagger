@@ -5,6 +5,7 @@ All notable changes to this project are documented here. The format follows [Kee
 ## [Unreleased]
 
 ### Changed
+- Relicensed from GPL-3.0 to MIT; earlier releases keep GPL-3.0 and package metadata (#4)
 
 - openai 7, dotenv 18, cloudinary 2.11, ESLint 10, Prettier 3.10 (#2)
 - Requires Node 22 or newer (`engines.node`, README), as openai 7 does (#2)

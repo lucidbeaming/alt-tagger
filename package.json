@@ -19,7 +19,7 @@
     "lint:fix": "eslint . --fix"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "description": "",
   "dependencies": {
     "@cloudinary/url-gen": "^1.22.1",
@@ -33,5 +33,13 @@
     "eslint": "^10.15.0",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.10.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lucidbeaming/alt-tagger.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lucidbeaming/alt-tagger/issues"
+  },
+  "homepage": "https://joshuacurry.dev/ai"
 }

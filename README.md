@@ -1,6 +1,28 @@
 # alt-tagger
 
-Generate and push HTML alt text for Cloudinary images using OpenAI Vision. Fetches your image resource list from Cloudinary, downloads images, generates concise alt text with GPT, and writes alt context back to Cloudinary—all in discrete steps you can run independently.
+Generate and push alt text for Cloudinary images with a vision model.
+
+```console
+$ node index.js test
+[tagger] test: Wrote resource list (fixture) to cloudinary-resources.json ( 2 resources )
+[tagger] test: Downloading 2 images from demo cloud...
+[download] Done. Succeeded: 2 Failed: 0
+[tagger] test: Simulating alt generation (no OpenAI)...
+[tagger] test: Wrote alt-tags.json ( 2 entries )
+[tagger] test: Simulating push to Cloudinary (no API)...
+[tagger] push: [simulate] Done. Would update: 2 Skipped: 0
+```
+
+A real `generate` run writes an alt file like this, which you review before pushing:
+
+```json
+{
+  "portfolio/2024/harbor-dusk": "Fishing boats moored in a calm harbor at dusk under an orange sky",
+  "portfolio/2024/studio-wall": "Rows of framed prints hanging on a white gallery wall"
+}
+```
+
+It generates HTML alt text for Cloudinary images using OpenAI Vision. Fetches your image resource list from Cloudinary, downloads images, generates concise alt text with GPT, and writes alt context back to Cloudinary—all in discrete steps you can run independently.
 
 ## Features
 
@@ -21,7 +43,7 @@ Each step is a separate task so you can run only what you need, re-run steps, or
 ## Installation
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/lucidbeaming/alt-tagger.git
 cd alt-tagger
 npm install
 ```
@@ -59,6 +81,7 @@ Optional (defaults shown):
 | `PUSHALT_INPUT`    | `alt-tags.json`             | Alt file to read for the `push` task.                                         |
 | `PUSHALT_DELAY_MS` | `200`                       | Delay in ms between Cloudinary context updates.                               |
 | `PUSHALT_LIMIT`    | (none)                      | Max number of entries to push.                                                |
+| `PUSHALT_MODE`     | `missing`                   | `missing` skips assets that already have alt text; `all` overwrites it.       |
 | `PUSHALT_VERBOSE`  | (unset)                     | Verbose logging for push.                                                     |
 
 Any option can be overridden on the command line (e.g. `--input`, `--output`, `--limit`, `--verbose`).
@@ -103,6 +126,9 @@ node index.js download --input my-resources.json --limit 10
 node index.js generate --input my-resources.json --output my-alts.json
 node index.js push --input my-alts.json --limit 5
 
+# Overwrite alt text that is already set (default mode only fills in missing alt)
+node index.js push --mode all
+
 # Verbose logging
 node index.js download -v
 ```
@@ -119,6 +145,23 @@ This script checks that `OPENAI_API_KEY` works and that Cloudinary (and optional
 
 - **Resource list** (e.g. `cloudinary-resources.json`): JSON object keyed by folder; each value can have a `resources` array and/or nested folders. Each resource has at least `public_id` and `secure_url`. The `list` task writes this format; `download` and `generate` read it.
 - **Alt file** (e.g. `alt-tags.json`): JSON object mapping `public_id` (string) to alt text (string). The `generate` task writes it; `push` reads it. Entries like `[error: ...]` or `[download failed or missing]` are skipped on push.
+
+## Writing good alt text
+
+The model gets a one-sentence prompt, so treat `alt-tags.json` as a draft and review it before `push`:
+
+- **Keep it short.** One sentence, ideally under about 125 characters. Screen readers read all of it, with no way to skim.
+- **Describe what matters in context.** "Oil painting of a red barn in snow" beats "image of a painting". Leave out "image of" and "picture of", since screen readers already announce an image.
+- **Fix names and specifics.** The model can't know a title, a person or a place. Add them where they matter.
+- **Decorative images get an empty alt.** Spacers, background textures and purely ornamental images should be rendered with `alt=""` so screen readers skip them. Set their entry to `""` (or delete it): `push` skips empty entries, and the empty `alt` belongs in the template that renders the image.
+- **Don't repeat nearby text.** If a caption already says what the image shows, the alt can be shorter or empty.
+
+See the W3C's [alt decision tree](https://www.w3.org/WAI/tutorials/images/decision-tree/) for edge cases.
+
+## Related projects
+
+- [generatejsonld](https://github.com/lucidbeaming/generatejsonld): crawls a site and generates Schema.org JSON-LD with Mistral, another LLM pass over published content
+- [mutant](https://github.com/lucidbeaming/mutant): desktop batch media converter, useful for preparing images before upload
 
 ## Vendor API documentation
 

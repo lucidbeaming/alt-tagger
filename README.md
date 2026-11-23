@@ -135,4 +135,4 @@ This script checks that `OPENAI_API_KEY` works and that Cloudinary (and optional
 
 ## License
 
-GNU General Public License v3.0 (GPL-3.0). See [LICENSE](LICENSE) for the full text.
+[MIT](LICENSE). Releases before this change were published under GPL-3.0, and those copies keep that license.

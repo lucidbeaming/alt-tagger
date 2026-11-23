@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- README: sample output, alt-text quality guidance, `push --mode` / `PUSHALT_MODE`, related projects (#9)
+
 ### Changed
 
 - Relicensed from GPL-3.0 to MIT; earlier releases keep GPL-3.0 (#4)

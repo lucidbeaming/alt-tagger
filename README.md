@@ -2,6 +2,8 @@
 
 Generate and push alt text for Cloudinary images with a vision model.
 
+Documentation: [joshuacurry.dev/alt-tagger](https://joshuacurry.dev/alt-tagger)
+
 ```console
 $ node index.js test
 [tagger] test: Wrote resource list (fixture) to cloudinary-resources.json ( 2 resources )
